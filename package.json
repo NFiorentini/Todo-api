@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "babel-preset-es2016": "^6.11.3",
+    "body-parser": "^1.13.3",
     "express": "^4.13.3"
   },
   "devDependencies": {

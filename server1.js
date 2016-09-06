@@ -1,14 +1,23 @@
 var express = require('express');
-var bodyParser = require('body-parser');
 var app = express();
 var PORT = process.env.PORT || 3000;
-var todos = [];
-var todoNextId = 1;
 
-// Anytime a json request comes in, Express will
-// be able to parse it, & we can access it via
-// req.body.
-app.use(bodyParser.json());
+
+// Temporary until we use a real db.
+// Each todo is the model.
+var todos =[{
+  id: 1,
+  description: 'Meet my pet T-Rex for lunch',
+  completed: false
+}, {
+  id: 2,
+  description: 'Go to market',
+  completed: false
+}, {
+  id: 3,
+  description: 'Win Heisman Trophy',
+  completed: true
+}];
 
 
 // The Root
@@ -57,23 +66,6 @@ app.get('/todos/:id', function (req, res) {
     // The requested resource was not found.
     res.status(404).send();
   }
-});
-
-
-// POST /todos enables adding new todos through
-// the API.
-app.post('/todos', function (req, res) {
-  var body = req.body;
-
-  // Assign todoNextId to body.id, then increment
-  // todoNextId by 1.
-  body.id = todoNextId++;
-
-  // Push the todo to the todos array.
-  todos.push(body);
-
-  res.json(body);
-
 });
 
 
