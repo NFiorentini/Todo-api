@@ -1,11 +1,11 @@
-let express = require('express');
-let app = express();
-let PORT = process.env.PORT  || 3000;
+var express = require('express');
+var app = express();
+var PORT = process.env.PORT  || 3000;
 
 
 // Temporary until we use a real db.
 // Each todo is the model.
-let todos =[{
+var todos =[{
   id: 1,
   description: 'Meet mom for lunch',
   completed: false
@@ -40,8 +40,8 @@ app.get('/todos/:id', function (req, res) {
   // the name in this case.
   // req.params are always strings & need to be
   // converted to int.
-  let todoId = parseInt(req.params.id);
-  let matchedTodo;
+  var todoId = parseInt(req.params.id);
+  var matchedTodo;
 
   // Iterate of the todos array defined globally
   // & try to find a match.
