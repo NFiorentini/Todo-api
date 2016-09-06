@@ -35,10 +35,6 @@ app.get('/todos/:id', function (req, res) {
   var todoId = parseInt(req.params.id, 10);
 
 
-  // .where(list, {key: "value", key: value,...})
-  // Returns an array of ALL the values that contain
-  // all of the key-value pairs.
-
   //.findWhere(list, {key: "value", key: value,...})
   // Returns the FIRST value that matches the
   // key-value pairs.
@@ -89,6 +85,31 @@ app.post('/todos', function (req, res) {
   todos.push(body);
 
   res.json(body);
+
+});
+
+
+// DELETE /todos/:id
+app.delete('/todos/:id', function (req, res) {
+  var todoId = parseInt(req.params.id, 10);
+
+  //.findWhere(list, {key: "value", key: value,...})
+  // Returns the FIRST value that matches the
+  // key-value pairs.
+  var matchedTodo = _.findWhere(todos, {id: todoId});
+
+  if(!matchedTodo) {
+
+    res.status(404).json(
+        {"error": "No todo found with that id"});
+
+  } else {
+    todos = _.without(todos, matchedTodo);
+
+    // By default, .json() sets the http status
+    // to 200 (OK).
+    res.json(matchedTodo);
+  }
 
 });
 
