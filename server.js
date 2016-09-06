@@ -40,12 +40,15 @@ app.get('/todos/:id', function (req, res) {
   // the name in this case.
   // req.params are always strings & need to be
   // converted to int.
-  var todoId = parseInt(req.params.id);
+  var todoId = parseInt(req.params.id, 10);
   var matchedTodo;
 
-  // Iterate of the todos array defined globally
-  // & try to find a match.
+  // Iterate of the todos array defined globally.
   todos.forEach(function (todo) {
+
+    // If the requested id passed into this app.get()
+    // matches the id of the current todo in this
+    // loop, assign it to matchedTodo.
     if(todoId === (todo.id)) {
       matchedTodo = todo;
     }
@@ -64,6 +67,7 @@ app.get('/todos/:id', function (req, res) {
     res.status(404).send();
   }
 });
+
 
 
 app.listen(PORT, function () {
