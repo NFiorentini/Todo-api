@@ -63,10 +63,7 @@ app.get('/todos/:id', function (req, res) {
 // POST /todos enables adding new todos through
 // the API.
 app.post('/todos', function (req, res) {
-
-  // .pick() prevents the user from creating new
-  // fields that would be added to a todo.
-  var body = _.pick(req.body, 'description', 'completed');
+  var body = req.body;
 
   if(!_.isBoolean(body.completed) ||
       !_.isString(body.description) ||
@@ -76,10 +73,6 @@ app.post('/todos', function (req, res) {
     // data was provided.
     return res.status(400).send();
   }
-
-  // .trim() removes whitespaces at the beginning
-  // & the end. Inner whitespace isn't removed.
-  body.description = body.description.trim();
 
   // Assign todoNextId to body.id, then increment
   // todoNextId by 1.

@@ -1,6 +1,5 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var _ = require("underscore");
 var app = express();
 var PORT = process.env.PORT || 3000;
 var todos = [];
@@ -33,20 +32,21 @@ app.get('/todos/:id', function (req, res) {
   // req.params are always strings & need to be
   // converted to int.
   var todoId = parseInt(req.params.id, 10);
+  var matchedTodo;
 
+  // Iterate of the todos array defined globally.
+  todos.forEach(function (todo) {
 
-  // .where(list, {key: "value", key: value,...})
-  // Returns an array of ALL the values that contain
-  // all of the key-value pairs.
+    // If the requested id passed into this app.get()
+    // matches the id of the current todo in this
+    // loop, assign it to matchedTodo.
+    if(todoId === (todo.id)) {
+      matchedTodo = todo;
+    }
+  });
 
-  //.findWhere(list, {key: "value", key: value,...})
-  // Returns the FIRST value that matches the
-  // key-value pairs.
-  var matchedTodo = _.findWhere(todos, {id: todoId});
-
-
-  // Pass the matchedTodo to json or send
-  // status 404.
+  // Pass the matchedTodo to json or send status
+  // 404.
   if(matchedTodo) {
 
     // .json() is shortcut to set a response
@@ -63,23 +63,7 @@ app.get('/todos/:id', function (req, res) {
 // POST /todos enables adding new todos through
 // the API.
 app.post('/todos', function (req, res) {
-
-  // .pick() prevents the user from creating new
-  // fields that would be added to a todo.
-  var body = _.pick(req.body, 'description', 'completed');
-
-  if(!_.isBoolean(body.completed) ||
-      !_.isString(body.description) ||
-      body.description.trim().length === 0) {
-
-    // The request can't be completed because bad
-    // data was provided.
-    return res.status(400).send();
-  }
-
-  // .trim() removes whitespaces at the beginning
-  // & the end. Inner whitespace isn't removed.
-  body.description = body.description.trim();
+  var body = req.body;
 
   // Assign todoNextId to body.id, then increment
   // todoNextId by 1.
