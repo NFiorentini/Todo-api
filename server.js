@@ -20,7 +20,6 @@ let todos =[{
 }];
 
 
-
 // The Root
 app.get('/', function (req, res) {
   res.send('Todo API Root');
