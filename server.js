@@ -20,8 +20,28 @@ app.get('/', function (req, res) {
 
 // GET all todos.
 app.get('/todos', function (req, res) {
-  res.json(todos);
+  var queryParams = req.query;
+  var filteredTodos = todos;
+
+  if(queryParams.hasOwnProperty('completed') &&
+      queryParams.completed === 'true'){
+
+    filteredTodos = _.where(filteredTodos,
+        {completed: true});
+
+  } else if(queryParams.hasOwnProperty('completed') &&
+        queryParams.completed === 'false') {
+
+    // .where(list, {key: "value", key: value,...})
+    // Returns an array of ALL the values that contain
+    // all of the key-value pairs.
+    filteredTodos = _.where(filteredTodos,
+        {completed: false});
+  }
+
+  res.json(filteredTodos);
 });
+
 
 
 // GET a specific todo.
