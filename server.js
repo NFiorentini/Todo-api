@@ -34,12 +34,10 @@ app.get('/todos/:id', function (req, res) {
   // converted to int.
   var todoId = parseInt(req.params.id, 10);
 
-
-  //.findWhere(list, {key: "value", key: value,...})
+  // _.findWhere(list, {key: "value", key: value,...})
   // Returns the FIRST value that matches the
   // key-value pairs.
   var matchedTodo = _.findWhere(todos, {id: todoId});
-
 
   // Pass the matchedTodo to json or send
   // status 404.
@@ -60,7 +58,7 @@ app.get('/todos/:id', function (req, res) {
 // the API.
 app.post('/todos', function (req, res) {
 
-  // .pick() prevents the user from creating new
+  // _.pick() prevents the user from creating new
   // fields that would be added to a todo.
   var body = _.pick(req.body, 'description', 'completed');
 
@@ -93,7 +91,7 @@ app.post('/todos', function (req, res) {
 app.delete('/todos/:id', function (req, res) {
   var todoId = parseInt(req.params.id, 10);
 
-  //.findWhere(list, {key: "value", key: value,...})
+  // _.findWhere(list, {key: "value", key: value,...})
   // Returns the FIRST value that matches the
   // key-value pairs.
   var matchedTodo = _.findWhere(todos, {id: todoId});
@@ -110,7 +108,53 @@ app.delete('/todos/:id', function (req, res) {
     // to 200 (OK).
     res.json(matchedTodo);
   }
+});
 
+
+// PUT /todos/:id
+app.put('/todos/:id', function (req, res) {
+
+  var todoId = parseInt(req.params.id, 10);
+  var matchedTodo = _.findWhere(todos, {id: todoId});
+
+  // id & any unnecessary fields are removed.
+  var body = _.pick(req.body, 'description', 'completed');
+
+  // validAttributes stores values that we want to
+  // update on the items in our todos array.
+  var validAttributes = {};
+
+  if(!matchedTodo) {
+    return res.status(404).send();
+  }
+
+  if(body.hasOwnProperty('completed') &&
+      _.isBoolean(body.completed)) {
+
+    validAttributes.completed = body.completed;
+
+  // Runs only if completed isn't a boolean.
+  } else if(body.hasOwnProperty('completed')) {
+    return res.status(400).send();
+  }
+
+  if(body.hasOwnProperty('description') &&
+      _.isString(body.description) &&
+      body.description.trim().length > 0) {
+
+    validAttributes.description = body.description;
+
+  } else if(body.hasOwnProperty('description')) {
+    return res.status(400).send();
+  }
+
+  // .extend({destKey: destVal}, {srcKey: srcVal})
+  // copies the source objects over to the destination
+  // object, overriding like values if necessary,
+  // & returns the destination object.
+  _.extend(matchedTodo, validAttributes);
+
+  res.json(matchedTodo);
 });
 
 

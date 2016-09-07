@@ -82,7 +82,6 @@ app.post('/todos', function (req, res) {
   todos.push(body);
 
   res.json(body);
-
 });
 
 
