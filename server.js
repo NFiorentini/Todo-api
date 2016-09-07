@@ -125,50 +125,43 @@ app.delete('/todos/:id', function (req, res) {
 
 // PUT /todos/:id
 app.put('/todos/:id', function (req, res) {
-
   var todoId = parseInt(req.params.id, 10);
-  var matchedTodo = _.findWhere(todos, {id: todoId});
 
   // id & any unnecessary fields are removed.
   var body = _.pick(req.body, 'description', 'completed');
 
   // validAttributes stores values that we want to
   // update on the items in our todos array.
-  var validAttributes = {};
+  var attributes = {};
 
-  if(!matchedTodo) {
-    return res.status(404).send();
+  if(body.hasOwnProperty('completed')) {
+
+    attributes.completed = body.completed;
   }
 
-  if(body.hasOwnProperty('completed') &&
-      _.isBoolean(body.completed)) {
+  if(body.hasOwnProperty('description')) {
 
-    validAttributes.completed = body.completed;
-
-  // Runs only if completed isn't a boolean.
-  } else if(body.hasOwnProperty('completed')) {
-    return res.status(400).send();
+    attributes.description = body.description;
   }
 
-  if(body.hasOwnProperty('description') &&
-      _.isString(body.description) &&
-      body.description.trim().length > 0) {
+  db.todo.findById(todoId).then(function (todo) {
 
-    validAttributes.description = body.description;
+    if(todo) {
+      todo.update(attributes).then(function (todo) {
+        res.json(todo.toJSON());
 
-  } else if(body.hasOwnProperty('description')) {
-    return res.status(400).send();
-  }
+      }, function (e) {
+        res.status(400).json(e);
+      });
 
-  // .extend({destKey: destVal}, {srcKey: srcVal})
-  // copies the source objects over to the destination
-  // object, overriding like values if necessary,
-  // & returns the destination object.
-  _.extend(matchedTodo, validAttributes);
+    } else {
+      res.status(404).send();
+    }
+  }, function () {
+    res.status(500).send();
 
-  res.json(matchedTodo);
+  })
 });
-
 
 
 db.sequelize.sync().then(function () {
