@@ -68,23 +68,17 @@ app.get('/todos/:id', function (req, res) {
   // converted to int.
   var todoId = parseInt(req.params.id, 10);
 
-  // _.findWhere(list, {key: "value", key: value,...})
-  // Returns the FIRST value that matches the
-  // key-value pairs.
-  var matchedTodo = _.findWhere(todos, {id: todoId});
+  db.todo.findById(todoId).then(function (todo) {
 
-  // Pass the matchedTodo to json or send
-  // status 404.
-  if(matchedTodo) {
-
-    // .json() is shortcut to set a response
-    // on Express.
-    res.json(matchedTodo);
-  } else {
-
-    // The requested resource was not found.
-    res.status(404).send();
-  }
+    if(!!todo) {
+      res.json(todo.toJSON());
+    } else {
+      res.status(404).send();
+    }
+  }, function (e) {
+    
+    res.status(500).send();
+  });
 });
 
 
@@ -97,34 +91,11 @@ app.post('/todos', function (req, res) {
   var body = _.pick(req.body, 'description', 'completed');
 
   db.todo.create(body).then(function (todo) {
-
     res.json(todo.toJSON());
 
   }, function (e) {
-
     res.status(400).json(e);
   });
-
-  // if(!_.isBoolean(body.completed) ||
-  //     !_.isString(body.description) ||
-  //     body.description.trim().length === 0) {
-  //
-  //   // The request can't be completed because bad
-  //   // data was provided.
-  //   return res.status(400).send();
-  // }
-  //
-  // // .trim() removes whitespaces at the beginning
-  // // & the end. Inner whitespace isn't removed.
-  // body.description = body.description.trim();
-  //
-  // // Assign todoNextId to body.id, then increment
-  // // todoNextId by 1.
-  // body.id = todoNextId++;
-  //
-  // // Push the todo to the todos array.
-  // todos.push(body);
-  // res.json(body);
 });
 
 
