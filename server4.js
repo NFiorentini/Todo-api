@@ -1,7 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require("underscore");
-var db = require('./db.js');
 var app = express();
 var PORT = process.env.PORT || 3000;
 var todos = [];
@@ -32,7 +31,7 @@ app.get('/todos', function (req, res) {
         {completed: true});
 
   } else if(queryParams.hasOwnProperty('completed') &&
-        queryParams.completed === 'false') {
+      queryParams.completed === 'false') {
 
     // .where(list, {key: "value", key: value,...})
     // Returns an array of ALL the values that contain
@@ -48,9 +47,9 @@ app.get('/todos', function (req, res) {
     filteredTodos = _.filter(filteredTodos,
         function (todo) {
 
-      return todo.description.toLowerCase()
-          .indexOf(queryParams.q.toLowerCase()) > -1;
-    });
+          return todo.description.toLowerCase()
+                  .indexOf(queryParams.q.toLowerCase()) > -1;
+        });
   }
 
   res.json(filteredTodos);
@@ -96,35 +95,28 @@ app.post('/todos', function (req, res) {
   // fields that would be added to a todo.
   var body = _.pick(req.body, 'description', 'completed');
 
-  db.todo.create(body).then(function (todo) {
+  if(!_.isBoolean(body.completed) ||
+      !_.isString(body.description) ||
+      body.description.trim().length === 0) {
 
-    res.json(todo.toJSON());
+    // The request can't be completed because bad
+    // data was provided.
+    return res.status(400).send();
+  }
 
-  }, function (e) {
+  // .trim() removes whitespaces at the beginning
+  // & the end. Inner whitespace isn't removed.
+  body.description = body.description.trim();
 
-    res.status(400).json(e);
-  });
+  // Assign todoNextId to body.id, then increment
+  // todoNextId by 1.
+  body.id = todoNextId++;
 
-  // if(!_.isBoolean(body.completed) ||
-  //     !_.isString(body.description) ||
-  //     body.description.trim().length === 0) {
-  //
-  //   // The request can't be completed because bad
-  //   // data was provided.
-  //   return res.status(400).send();
-  // }
-  //
-  // // .trim() removes whitespaces at the beginning
-  // // & the end. Inner whitespace isn't removed.
-  // body.description = body.description.trim();
-  //
-  // // Assign todoNextId to body.id, then increment
-  // // todoNextId by 1.
-  // body.id = todoNextId++;
-  //
-  // // Push the todo to the todos array.
-  // todos.push(body);
-  // res.json(body);
+  // Push the todo to the todos array.
+  todos.push(body);
+
+  res.json(body);
+
 });
 
 
@@ -174,7 +166,7 @@ app.put('/todos/:id', function (req, res) {
 
     validAttributes.completed = body.completed;
 
-  // Runs only if completed isn't a boolean.
+    // Runs only if completed isn't a boolean.
   } else if(body.hasOwnProperty('completed')) {
     return res.status(400).send();
   }
@@ -199,13 +191,9 @@ app.put('/todos/:id', function (req, res) {
 });
 
 
-db.sequelize.sync().then(function () {
 
-  app.listen(PORT, function () {
+app.listen(PORT, function () {
 
-    console.log('Express listening & caring on port ' +
-        PORT + '!');
-  });
+  console.log('Express listening & caring on port ' +
+      PORT + '!');
 });
-
-
