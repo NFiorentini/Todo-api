@@ -100,23 +100,26 @@ app.post('/todos', function (req, res) {
 app.delete('/todos/:id', function (req, res) {
   var todoId = parseInt(req.params.id, 10);
 
-  // _.findWhere(list, {key: "value", key: value,...})
-  // Returns the FIRST value that matches the
-  // key-value pairs.
-  var matchedTodo = _.findWhere(todos, {id: todoId});
+  db.todo.destroy({
+    where: {
+      id: todoId
+    }
+  }).then(function (rowsDeleted) {
 
-  if(!matchedTodo) {
+    if(rowsDeleted === 0) {
 
-    res.status(404).json(
-        {"error": "No todo found with that id"});
+      res.status(404).json({
+        error: 'No todo with id'
+      });
+    } else {
 
-  } else {
-    todos = _.without(todos, matchedTodo);
-
-    // By default, .json() sets the http status
-    // to 200 (OK).
-    res.json(matchedTodo);
-  }
+      // 204: Everything went well & there's nothing
+      // to send back.
+      res.status(204).send();
+    }
+  }, function () {
+    res.status(500).send();
+  });
 });
 
 
