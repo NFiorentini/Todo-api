@@ -7,6 +7,7 @@ var PORT = process.env.PORT || 3000;
 var todos = [];
 var todoNextId = 1;
 
+
 // Anytime a json request comes in, Express will
 // be able to parse it, & we can access it via
 // req.body.
@@ -21,39 +22,35 @@ app.get('/', function (req, res) {
 
 // GET all todos.
 app.get('/todos', function (req, res) {
-  var queryParams = req.query;
-  var filteredTodos = todos;
+  var query = req.query;
+  var where = {};
 
-  // Filter by completed status.
-  if(queryParams.hasOwnProperty('completed') &&
-      queryParams.completed === 'true'){
+  if(query.hasOwnProperty('completed') &&
+      query.completed === 'true') {
 
-    filteredTodos = _.where(filteredTodos,
-        {completed: true});
+    where.completed = true;
 
-  } else if(queryParams.hasOwnProperty('completed') &&
-        queryParams.completed === 'false') {
+  } else if(query.hasOwnProperty('completed') &&
+      query.completed === 'false') {
 
-    // .where(list, {key: "value", key: value,...})
-    // Returns an array of ALL the values that contain
-    // all of the key-value pairs.
-    filteredTodos = _.where(filteredTodos,
-        {completed: false});
+    where.completed = false;
   }
 
-  // Filter by query
-  if(queryParams.hasOwnProperty('q') &&
-      queryParams.q.length > 0) {
+  if(query.hasOwnProperty('q') && query.q.length > 0) {
 
-    filteredTodos = _.filter(filteredTodos,
-        function (todo) {
-
-      return todo.description.toLowerCase()
-          .indexOf(queryParams.q.toLowerCase()) > -1;
-    });
+    where.description = {
+      $like: '%' + query.q + '%'
+    };
   }
 
-  res.json(filteredTodos);
+  db.todo.findAll({where: where}).then(function (todos) {
+
+    res.json(todos);
+
+  }, function (e) {
+
+    res.status(500).send();
+  });
 });
 
 
@@ -76,7 +73,7 @@ app.get('/todos/:id', function (req, res) {
       res.status(404).send();
     }
   }, function (e) {
-    
+
     res.status(500).send();
   });
 });
@@ -168,6 +165,7 @@ app.put('/todos/:id', function (req, res) {
 
   res.json(matchedTodo);
 });
+
 
 
 db.sequelize.sync().then(function () {
