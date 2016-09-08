@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "babel-preset-es2016": "^6.11.3",
+    "bcryptjs": "^2.3.0",
     "body-parser": "^1.13.3",
     "express": "^4.13.3",
     "pg": "^4.4.1",

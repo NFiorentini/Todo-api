@@ -16,3 +16,5 @@ exportToHTML/
 models/todo-compiled.js
 models/todo-compiled.js.map
 data/*.sqlite
+models/user-compiled.js
+models/user-compiled.js.map
