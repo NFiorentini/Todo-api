@@ -1,13 +1,13 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var _ = require("underscore");
-var db = require('./db.js');
-var bcrypt = require("bcryptjs");
-var middleware = require('./middleware.js')(db);
-var app = express();
-var PORT = process.env.PORT || 3000;
-var todos = [];
-var todoNextId = 1;
+let express = require('express');
+let bodyParser = require('body-parser');
+let _ = require("underscore");
+let db = require('./db.js');
+let bcrypt = require("bcryptjs");
+let middleware = require('./middleware.js')(db);
+let app = express();
+let PORT = process.env.PORT || 3000;
+let todos = [];
+let todoNextId = 1;
 
 
 // Anytime a json request comes in, Express will
@@ -24,8 +24,8 @@ app.get('/', function (req, res) {
 
 // GET all todos.
 app.get('/todos', function (req, res) {
-  var query = req.query;
-  var where = {};
+  let query = req.query;
+  let where = {};
 
   if (query.hasOwnProperty('completed') &&
       query.completed === 'true') {
@@ -65,7 +65,7 @@ app.get('/todos/:id', function (req, res) {
   // the name in this case.
   // req.params are always strings & need to be
   // converted to int.
-  var todoId = parseInt(req.params.id, 10);
+  let todoId = parseInt(req.params.id, 10);
 
   db.todo.findById(todoId).then(function (todo) {
 
@@ -88,7 +88,7 @@ app.post('/todos', function (req, res) {
 
   // _.pick() prevents the user from creating new
   // fields that would be added to a todo.
-  var body = _.pick(req.body, 'description', 'completed');
+  let body = _.pick(req.body, 'description', 'completed');
 
   db.todo.create(body).then(function (todo) {
     res.json(todo.toJSON());
@@ -102,7 +102,7 @@ app.post('/todos', function (req, res) {
 
 // DELETE /todos/:id
 app.delete('/todos/:id', function (req, res) {
-  var todoId = parseInt(req.params.id, 10);
+  let todoId = parseInt(req.params.id, 10);
 
   db.todo.destroy({
     where: {
@@ -131,14 +131,14 @@ app.delete('/todos/:id', function (req, res) {
 
 // PUT /todos/:id
 app.put('/todos/:id', function (req, res) {
-  var todoId = parseInt(req.params.id, 10);
+  let todoId = parseInt(req.params.id, 10);
 
   // id & any unnecessary fields are removed.
-  var body = _.pick(req.body, 'description', 'completed');
+  let body = _.pick(req.body, 'description', 'completed');
 
   // validAttributes stores values that we want to
   // update on the items in our todos array.
-  var attributes = {};
+  let attributes = {};
 
   if (body.hasOwnProperty('completed')) {
 
@@ -172,7 +172,7 @@ app.put('/todos/:id', function (req, res) {
 
 
 app.post('/users', function (req, res) {
-  var body = _.pick(req.body, 'email', 'password');
+  let body = _.pick(req.body, 'email', 'password');
 
   db.user.create(body).then(function (user) {
     res.json(user.toPublicJSON());
@@ -185,11 +185,11 @@ app.post('/users', function (req, res) {
 
 
 app.post('/users/login', function (req, res) {
-  var body = _.pick(req.body, 'email', 'password');
+  let body = _.pick(req.body, 'email', 'password');
 
   db.user.authenticate(body).then(function (user) {
 
-    var token = user.generateToken('authentication');
+    let token = user.generateToken('authentication');
 
     if (token) {
       res.header('Auth', token).json(user.toPublicJSON());
