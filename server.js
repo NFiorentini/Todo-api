@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var _ = require("underscore");
 var db = require('./db.js');
 var bcrypt = require("bcryptjs");
+var middleware = require('./middleware.js')(db);
 var app = express();
 var PORT = process.env.PORT || 3000;
 var todos = [];
@@ -26,18 +27,18 @@ app.get('/todos', function (req, res) {
   var query = req.query;
   var where = {};
 
-  if(query.hasOwnProperty('completed') &&
+  if (query.hasOwnProperty('completed') &&
       query.completed === 'true') {
 
     where.completed = true;
 
-  } else if(query.hasOwnProperty('completed') &&
+  } else if (query.hasOwnProperty('completed') &&
       query.completed === 'false') {
 
     where.completed = false;
   }
 
-  if(query.hasOwnProperty('q') && query.q.length > 0) {
+  if (query.hasOwnProperty('q') && query.q.length > 0) {
 
     where.description = {
       $like: '%' + query.q + '%'
@@ -68,7 +69,7 @@ app.get('/todos/:id', function (req, res) {
 
   db.todo.findById(todoId).then(function (todo) {
 
-    if(!!todo) {
+    if (!!todo) {
       res.json(todo.toJSON());
     } else {
       res.status(404).send();
@@ -78,6 +79,7 @@ app.get('/todos/:id', function (req, res) {
     res.status(500).send();
   });
 });
+
 
 
 // POST /todos enables adding new todos through
@@ -97,6 +99,7 @@ app.post('/todos', function (req, res) {
 });
 
 
+
 // DELETE /todos/:id
 app.delete('/todos/:id', function (req, res) {
   var todoId = parseInt(req.params.id, 10);
@@ -105,9 +108,10 @@ app.delete('/todos/:id', function (req, res) {
     where: {
       id: todoId
     }
-  }).then(function (rowsDeleted) {
+  })
+  .then(function (rowsDeleted) {
 
-    if(rowsDeleted === 0) {
+    if (rowsDeleted === 0) {
 
       res.status(404).json({
         error: 'No todo with id'
@@ -124,6 +128,7 @@ app.delete('/todos/:id', function (req, res) {
 });
 
 
+
 // PUT /todos/:id
 app.put('/todos/:id', function (req, res) {
   var todoId = parseInt(req.params.id, 10);
@@ -135,19 +140,19 @@ app.put('/todos/:id', function (req, res) {
   // update on the items in our todos array.
   var attributes = {};
 
-  if(body.hasOwnProperty('completed')) {
+  if (body.hasOwnProperty('completed')) {
 
     attributes.completed = body.completed;
   }
 
-  if(body.hasOwnProperty('description')) {
+  if (body.hasOwnProperty('description')) {
 
     attributes.description = body.description;
   }
 
   db.todo.findById(todoId).then(function (todo) {
 
-    if(todo) {
+    if (todo) {
       todo.update(attributes).then(function (todo) {
         res.json(todo.toJSON());
 
@@ -165,6 +170,7 @@ app.put('/todos/:id', function (req, res) {
 });
 
 
+
 app.post('/users', function (req, res) {
   var body = _.pick(req.body, 'email', 'password');
 
@@ -177,6 +183,7 @@ app.post('/users', function (req, res) {
 });
 
 
+
 app.post('/users/login', function (req, res) {
   var body = _.pick(req.body, 'email', 'password');
 
@@ -184,7 +191,7 @@ app.post('/users/login', function (req, res) {
 
     var token = user.generateToken('authentication');
 
-    if(token) {
+    if (token) {
       res.header('Auth', token).json(user.toPublicJSON());
     } else {
       res.status(401).send();
@@ -194,6 +201,7 @@ app.post('/users/login', function (req, res) {
     res.status(401).send();
   });
 });
+
 
 
 db.sequelize.sync({force: true}).then(function () {

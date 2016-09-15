@@ -16,6 +16,9 @@ if(env === 'production') {
       undefined, {
 
     'dialect': 'sqlite',
+
+    // __dirname is variable provided by Nodejs representing
+    // the path from harddrive to the current working directory.
     'storage': __dirname + '/data/dev-todo-api.sqlite'
   });
 }
