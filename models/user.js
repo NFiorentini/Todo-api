@@ -25,6 +25,9 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING
     },
     password: {
+
+      // VIRTUAL isn't stored in the database, but
+      // it is still accessible.
       type: DataTypes.VIRTUAL,
       allowNull: false,
       validate: {
