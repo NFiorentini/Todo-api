@@ -23,7 +23,7 @@ app.get('/', function (req, res) {
 
 
 // GET all todos.
-app.get('/todos', function (req, res) {
+app.get('/todos', middleware.requireAuthentication, function (req, res) {
   let query = req.query;
   let where = {};
 
@@ -59,7 +59,7 @@ app.get('/todos', function (req, res) {
 
 // GET a specific todo.
 // Express uses :id to parse the incoming data.
-app.get('/todos/:id', function (req, res) {
+app.get('/todos/:id', middleware.requireAuthentication, function (req, res) {
 
   // params is short for "url parameters", & id is
   // the name in this case.
@@ -91,7 +91,7 @@ app.get('/todos/:id', function (req, res) {
 
 // POST /todos enables adding new todos through
 // the API.
-app.post('/todos', function (req, res) {
+app.post('/todos', middleware.requireAuthentication, function (req, res) {
 
   // _.pick() prevents the user from creating new
   // fields that would be added to a todo.
@@ -113,7 +113,7 @@ app.post('/todos', function (req, res) {
 
 
 // DELETE /todos/:id
-app.delete('/todos/:id', function (req, res) {
+app.delete('/todos/:id', middleware.requireAuthentication, function (req, res) {
   let todoId = parseInt(req.params.id, 10);
 
   db.todo.destroy(
@@ -141,7 +141,7 @@ app.delete('/todos/:id', function (req, res) {
 
 
 // PUT /todos/:id
-app.put('/todos/:id', function (req, res) {
+app.put('/todos/:id', middleware.requireAuthentication, function (req, res) {
   let todoId = parseInt(req.params.id, 10);
 
   // id & any unnecessary fields are removed.
@@ -200,6 +200,7 @@ app.post('/users', function (req, res) {
 
 
 
+// POST /users/login
 app.post('/users/login', function (req, res) {
   let body = _.pick(req.body, 'email', 'password');
 
