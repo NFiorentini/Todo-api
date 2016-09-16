@@ -59,7 +59,7 @@ module.exports = function (sequelize, DataTypes) {
       authenticate: function (body) {
         return new Promise(function (resolve, reject) {
 
-          if (typeof body.email !== 'string' ||
+          if(typeof body.email !== 'string' ||
               typeof body.password !== 'string') {
 
             return reject();
@@ -71,7 +71,7 @@ module.exports = function (sequelize, DataTypes) {
             }
           }).then(function (user) {
 
-            if (!user || !bcrypt.compareSync(body.password,
+            if(!user || !bcrypt.compareSync(body.password,
                     user.get('password_hash'))) {
 
               return reject();
@@ -94,7 +94,7 @@ module.exports = function (sequelize, DataTypes) {
       },
       generateToken: function (type) {
 
-        if (!_.isString(type)) {
+        if(!_.isString(type)) {
           return undefined;
         }
 

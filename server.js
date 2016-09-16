@@ -201,19 +201,25 @@ app.post('/users', function (req, res) {
 
 
 app.post('/users/login', function (req, res) {
-
   let body = _.pick(req.body, 'email', 'password');
 
-  db.user.authenticate(body).then(function (user) {
+  // Returns a promise.
+  db.user.authenticate(body)
 
+  // Success case.
+  .then(function (user) {
     let token = user.generateToken('authentication');
 
-    if (token) {
+    if(token) {
+
+      // toPublicJSON() returns only the fields we
+      // want to expose.
       res.header('Auth', token).json(user.toPublicJSON());
     } else {
       res.status(401).send();
     }
 
+  // Error case.
   }, function () {
     res.status(401).send();
   });
@@ -223,7 +229,7 @@ app.post('/users/login', function (req, res) {
 
 // db.sequelize.sync({force: true}) removes the database
 // when the server starts.
-db.sequelize.sync().then(function () {
+db.sequelize.sync({force: true}).then(function () {
 
   app.listen(PORT, function () {
 
