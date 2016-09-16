@@ -1,22 +1,32 @@
+let cryptojs = require('crypto-js');
+
 module.exports = function (db) {
 
   return {
 
     // Route-level middleware requiring the user to be logged in.
     requireAuthentication: function (req, res, next) {
-      let token = req.get('Auth');
+      let token = req.get('Auth') || '';
 
-      db.user.findByToken(token)
-          .then(function (user) {
+      db.token.findOne({
+        where: {
+          tokenHash: cryptojs.MD5(token).toString()
+        }
+      }).then(function (tokenInstance) {
+        if(!tokenInstance) {
+          throw new Error();
+        }
 
-            req.user = user;
+        req.token = tokenInstance;
+        return db.user.findByToken(token);
 
-            // Tell Express to move on.
-            next();
+      }).then(function (user) {
+        req.user = user;
+        next();
 
-          }, function () {
-            res.status(401).send();
-          });
+      }).catch(function () {
+        res.status(401).send();
+      });
     }
   };
 };
