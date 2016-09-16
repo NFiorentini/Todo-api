@@ -50,6 +50,9 @@ db.sequelize = sequelize;
 // The Sequelize library.
 db.Sequelize = Sequelize;
 
+db.todo.belongsTo(db.user);
+db.user.hasMany(db.todo);
+
 
 // Export the db object
 module.exports = db;

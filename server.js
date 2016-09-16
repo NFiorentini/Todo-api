@@ -25,7 +25,9 @@ app.get('/', function (req, res) {
 // GET all todos.
 app.get('/todos', middleware.requireAuthentication, function (req, res) {
   let query = req.query;
-  let where = {};
+  let where = {
+    userId: req.user.get('id')
+  };
 
   if (query.hasOwnProperty('completed') &&
       query.completed === 'true') {
@@ -67,9 +69,13 @@ app.get('/todos/:id', middleware.requireAuthentication, function (req, res) {
   // converted to int.
   let todoId = parseInt(req.params.id, 10);
 
-  // Sequelize's findById() returns a Promise with that
-  // object pulled from the database.
-  db.todo.findById(todoId)
+
+  db.todo.findOne({
+    where: {
+      id: todoId,
+      userId: req.user.get('id')
+    }
+  })
 
   // Success case.
   .then(function (todo) {
@@ -101,7 +107,14 @@ app.post('/todos', middleware.requireAuthentication, function (req, res) {
 
   // Success callback. Send back the data.
   .then(function (todo) {
-    res.json(todo.toJSON());
+
+    // res.json(todo.toJSON());
+    req.user.addTodo(todo).then(function () {
+      return todo.reload();
+
+    }).then (function (todo) {
+      res.json(todo.toJSON());
+    });
   },
 
   // Error callback. Send back the error object.
@@ -116,8 +129,11 @@ app.post('/todos', middleware.requireAuthentication, function (req, res) {
 app.delete('/todos/:id', middleware.requireAuthentication, function (req, res) {
   let todoId = parseInt(req.params.id, 10);
 
-  db.todo.destroy(
-      {where: {id: todoId}
+  db.todo.destroy({
+    where: {
+      id: todoId,
+      userId: req.user.get('id')
+    }
   })
   .then(function (rowsDeleted) {
 
@@ -159,7 +175,13 @@ app.put('/todos/:id', middleware.requireAuthentication, function (req, res) {
     attributes.description = body.description;
   }
 
-  db.todo.findById(todoId).then(function (todo) {
+  db.todo.findOne({
+    where: {
+      id: todoId,
+      userId: req.user.get('id')
+    }
+  })
+  .then(function (todo) {
 
     if(todo) {
       todo.update(attributes).then(function (todo) {
