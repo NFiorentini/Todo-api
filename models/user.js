@@ -44,6 +44,9 @@ module.exports = function (sequelize, DataTypes) {
 
       // Sanitizing email input.
       beforeValidate: function (user, options) {
+
+        // Don't want to call toLowerCase() on
+        // numbers or undefined!
         if(typeof user.email === 'string') {
           user.email = user.email.toLowerCase();
         }
@@ -53,7 +56,7 @@ module.exports = function (sequelize, DataTypes) {
       authenticate: function (body) {
         return new Promise(function (resolve, reject) {
 
-          if(typeof body.email !== 'string' ||
+          if (typeof body.email !== 'string' ||
               typeof body.password !== 'string') {
 
             return reject();
@@ -65,7 +68,7 @@ module.exports = function (sequelize, DataTypes) {
             }
           }).then(function (user) {
 
-            if(!user || !bcrypt.compareSync(body.password,
+            if (!user || !bcrypt.compareSync(body.password,
                     user.get('password_hash'))) {
 
               return reject();
@@ -86,17 +89,19 @@ module.exports = function (sequelize, DataTypes) {
         return _.pick(json, 'id', 'email', 'createdAt',
             'updatedAt');
       },
-      generateToken : function (type) {
+      generateToken: function (type) {
 
-        if(!_.isString(type)) {
+        if (!_.isString(type)) {
           return undefined;
         }
 
         try {
 
           let stringData = JSON.stringify(
-              {id: this.get('id'),
-              type: type});
+              {
+                id: this.get('id'),
+                type: type
+              });
 
           let encryptedData = cryptojs.AES.encrypt(
               stringData, 'abc123!@#!').toString();
@@ -106,7 +111,7 @@ module.exports = function (sequelize, DataTypes) {
           }, 'qwerty098');
 
           return token;
-        }catch (e) {
+        } catch (e) {
           console.error(e);
           return undefined;
         }
