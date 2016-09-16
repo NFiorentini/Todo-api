@@ -1,15 +1,19 @@
-var bcrypt = require('bcryptjs');
-var _ = require('underscore');
-var cryptojs = require('crypto-js');
-var jwt = require('jsonwebtoken');
+let bcrypt = require('bcryptjs');
+let _ = require('underscore');
+let cryptojs = require('crypto-js');
+let jwt = require('jsonwebtoken');
 
+// Same args as todo.js.
 module.exports = function (sequelize, DataTypes) {
 
-  var user = sequelize.define('user', {
+  let user = sequelize.define('user', {
     email: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
+
+      // Built-in sequelize attribute that does
+      // the complex email validation.
       validate: {
         isEmail: true
       }
@@ -27,8 +31,8 @@ module.exports = function (sequelize, DataTypes) {
         len: [7, 100]
       },
       set: function (value) {
-        var salt = bcrypt.genSaltSync(10);
-        var hashedPassword = bcrypt.hashSync(value, salt);
+        let salt = bcrypt.genSaltSync(10);
+        let hashedPassword = bcrypt.hashSync(value, salt);
 
         this.setDataValue('password', value);
         this.setDataValue('salt', salt);
@@ -43,7 +47,6 @@ module.exports = function (sequelize, DataTypes) {
         if(typeof user.email === 'string') {
           user.email = user.email.toLowerCase();
         }
-
       }
     },
     classMethods: {
@@ -78,7 +81,7 @@ module.exports = function (sequelize, DataTypes) {
     instanceMethods: {
 
       toPublicJSON: function () {
-        var json = this.toJSON();
+        let json = this.toJSON();
 
         return _.pick(json, 'id', 'email', 'createdAt',
             'updatedAt');
@@ -91,14 +94,14 @@ module.exports = function (sequelize, DataTypes) {
 
         try {
 
-          var stringData = JSON.stringify(
+          let stringData = JSON.stringify(
               {id: this.get('id'),
               type: type});
 
-          var encryptedData = cryptojs.AES.encrypt(
+          let encryptedData = cryptojs.AES.encrypt(
               stringData, 'abc123!@#!').toString();
 
-          var token = jwt.sign({
+          let token = jwt.sign({
             token: encryptedData
           }, 'qwerty098');
 

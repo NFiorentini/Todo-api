@@ -4,7 +4,7 @@ module.exports = function (db) {
 
     // Route-level middleware requiring the user to be logged in.
     requireAuthentication: function (req, res, next) {
-      var token = req.get('Auth');
+      let token = req.get('Auth');
 
       db.user.findByToken(token)
           .then(function (user) {

@@ -2,7 +2,7 @@ let express = require('express');
 let bodyParser = require('body-parser');
 let _ = require("underscore");
 let db = require('./db.js');
-let bcrypt = require("bcryptjs");
+// let bcrypt = require("bcryptjs");
 let middleware = require('./middleware.js')(db);
 let app = express();
 let PORT = process.env.PORT || 3000;
@@ -45,12 +45,12 @@ app.get('/todos', function (req, res) {
     };
   }
 
+  // Sequelize's findAll() lets you search by various criteria.
   db.todo.findAll({where: where}).then(function (todos) {
 
     res.json(todos);
 
   }, function (e) {
-
     res.status(500).send();
   });
 });
@@ -67,15 +67,22 @@ app.get('/todos/:id', function (req, res) {
   // converted to int.
   let todoId = parseInt(req.params.id, 10);
 
-  db.todo.findById(todoId).then(function (todo) {
+  // Sequelize's findById() returns a Promise with that
+  // object pulled from the database.
+  db.todo.findById(todoId)
+
+  // Success case.
+  .then(function (todo) {
 
     if (!!todo) {
       res.json(todo.toJSON());
     } else {
       res.status(404).send();
     }
-  }, function (e) {
+  },
 
+   // Error case. 500 is a server error
+   function (e) {
     res.status(500).send();
   });
 });
@@ -90,10 +97,15 @@ app.post('/todos', function (req, res) {
   // fields that would be added to a todo.
   let body = _.pick(req.body, 'description', 'completed');
 
-  db.todo.create(body).then(function (todo) {
-    res.json(todo.toJSON());
+  db.todo.create(body)
 
-  }, function (e) {
+  // Success callback. Send back the data.
+  .then(function (todo) {
+    res.json(todo.toJSON());
+  },
+
+  // Error callback. Send back the error object.
+  function (e) {
     res.status(400).json(e);
   });
 });
@@ -104,22 +116,21 @@ app.post('/todos', function (req, res) {
 app.delete('/todos/:id', function (req, res) {
   let todoId = parseInt(req.params.id, 10);
 
-  db.todo.destroy({
-    where: {
-      id: todoId
-    }
+  db.todo.destroy(
+      {where: {id: todoId}
   })
   .then(function (rowsDeleted) {
 
-    if (rowsDeleted === 0) {
+    if(rowsDeleted === 0) {
 
-      res.status(404).json({
-        error: 'No todo with id'
-      });
+      res.status(404).json(
+          {error: 'No todo with id'}
+      );
+
     } else {
 
-      // 204: Everything went well & there's nothing
-      // to send back.
+      // 204: Everything went well & there's
+      // nothing to send back.
       res.status(204).send();
     }
   }, function () {
@@ -136,23 +147,21 @@ app.put('/todos/:id', function (req, res) {
   // id & any unnecessary fields are removed.
   let body = _.pick(req.body, 'description', 'completed');
 
-  // validAttributes stores values that we want to
+  // attributes stores values that we want to
   // update on the items in our todos array.
   let attributes = {};
 
   if (body.hasOwnProperty('completed')) {
-
     attributes.completed = body.completed;
   }
 
   if (body.hasOwnProperty('description')) {
-
     attributes.description = body.description;
   }
 
   db.todo.findById(todoId).then(function (todo) {
 
-    if (todo) {
+    if(todo) {
       todo.update(attributes).then(function (todo) {
         res.json(todo.toJSON());
 
@@ -165,18 +174,25 @@ app.put('/todos/:id', function (req, res) {
     }
   }, function () {
     res.status(500).send();
-
-  })
+  });
 });
 
 
 
 app.post('/users', function (req, res) {
+
+  // Filter data that's been seen to the request.
   let body = _.pick(req.body, 'email', 'password');
 
-  db.user.create(body).then(function (user) {
+  // create() returns a Promise...
+  db.user.create(body)
+
+  // ...meaning we can call then() with two functions:
+  // the success case...
+  .then(function (user) {
     res.json(user.toPublicJSON());
 
+  // ...& the error case.
   }, function (e) {
     res.status(400).json(e);
   });
@@ -185,6 +201,7 @@ app.post('/users', function (req, res) {
 
 
 app.post('/users/login', function (req, res) {
+
   let body = _.pick(req.body, 'email', 'password');
 
   db.user.authenticate(body).then(function (user) {
@@ -204,7 +221,9 @@ app.post('/users/login', function (req, res) {
 
 
 
-db.sequelize.sync({force: true}).then(function () {
+// db.sequelize.sync({force: true}) removes the database
+// when the server starts.
+db.sequelize.sync().then(function () {
 
   app.listen(PORT, function () {
 
