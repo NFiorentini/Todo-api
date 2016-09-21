@@ -13,6 +13,7 @@ module.exports = function (db) {
           tokenHash: cryptojs.MD5(token).toString()
         }
       }).then(function (tokenInstance) {
+
         if(!tokenInstance) {
           throw new Error();
         }

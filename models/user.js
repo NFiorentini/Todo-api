@@ -34,6 +34,7 @@ module.exports = function (sequelize, DataTypes) {
         len: [7, 100]
       },
       set: function (value) {
+
         let salt = bcrypt.genSaltSync(10);
         let hashedPassword = bcrypt.hashSync(value, salt);
 
@@ -92,24 +93,26 @@ module.exports = function (sequelize, DataTypes) {
             let bytes = cryptojs.AES.decrypt(
                 decodedJWT.token, 'abc123!@#!');
 
-            let tokenData = JSON.parse(bytes.toString(cryptojs.enc.Utf8));
+            let tokenData = JSON.parse(bytes.toString(
+                cryptojs.enc.Utf8));
 
             user.findById(tokenData.id).then(function (user) {
+
               if(user) {
                 resolve(user);
 
-              // reject() if the id doesn't exist in the database.
+                // reject() if the id doesn't exist in the database.
               } else {
                 reject();
               }
 
-            // reject() if findById fails, e.g., if database wasn't
-            // connected.
+              // reject() if findById fails, e.g., if database
+              // wasn't connected.
             }, function (e) {
               reject();
             });
 
-          // reject() if the token isn't a valid format.
+            // reject() if the token isn't a valid format.
           } catch (e){
             reject();
           }
@@ -148,6 +151,7 @@ module.exports = function (sequelize, DataTypes) {
           }, 'qwerty098');
 
           return token;
+
         } catch (e) {
           console.error(e);
           return undefined;

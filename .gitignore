@@ -20,3 +20,5 @@ models/user-compiled.js
 models/user-compiled.js.map
 middleware-compiled.js
 middleware-compiled.js.map
+models/token-compiled.js
+models/token-compiled.js.map

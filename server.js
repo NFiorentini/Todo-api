@@ -2,7 +2,6 @@ let express = require('express');
 let bodyParser = require('body-parser');
 let _ = require("underscore");
 let db = require('./db.js');
-// let bcrypt = require("bcryptjs");
 let middleware = require('./middleware.js')(db);
 let app = express();
 let PORT = process.env.PORT || 3000;
@@ -16,188 +15,195 @@ let todoNextId = 1;
 app.use(bodyParser.json());
 
 
-// The Root
+// The Root.
 app.get('/', function (req, res) {
   res.send('Todo API Root');
 });
 
 
 // GET all todos.
-app.get('/todos', middleware.requireAuthentication, function (req, res) {
-  let query = req.query;
-  let where = {
-    userId: req.user.get('id')
-  };
+app.get('/todos', middleware.requireAuthentication,
+    function (req, res) {
 
-  if (query.hasOwnProperty('completed') &&
-      query.completed === 'true') {
+      let query = req.query;
 
-    where.completed = true;
+      let where = {
+        userId: req.user.get('id')
+      };
 
-  } else if (query.hasOwnProperty('completed') &&
-      query.completed === 'false') {
+      if(query.hasOwnProperty('completed') &&
+          query.completed === 'true') {
 
-    where.completed = false;
-  }
+        where.completed = true;
 
-  if (query.hasOwnProperty('q') && query.q.length > 0) {
+      } else if (query.hasOwnProperty('completed') &&
+          query.completed === 'false') {
 
-    where.description = {
-      $like: '%' + query.q + '%'
-    };
-  }
+        where.completed = false;
+      }
 
-  // Sequelize's findAll() lets you search by various criteria.
-  db.todo.findAll({where: where}).then(function (todos) {
+      if(query.hasOwnProperty('q') && query.q.length > 0) {
 
-    res.json(todos);
+        where.description = {
+          $like: '%' + query.q + '%'
+        };
+      }
 
-  }, function (e) {
-    res.status(500).send();
-  });
-});
+      // Sequelize's findAll() lets you search by various criteria.
+      db.todo.findAll({where: where}).then(function (todos) {
+
+        res.json(todos);
+
+      }, function (e) {
+        res.status(500).send();
+      });
+    });
 
 
 
 // GET a specific todo.
 // Express uses :id to parse the incoming data.
-app.get('/todos/:id', middleware.requireAuthentication, function (req, res) {
+app.get('/todos/:id', middleware.requireAuthentication,
+    function (req, res) {
 
-  // params is short for "url parameters", & id is
-  // the name in this case.
-  // req.params are always strings & need to be
-  // converted to int.
-  let todoId = parseInt(req.params.id, 10);
+      // params is short for "url parameters", & id is
+      // the name in this case.
+      // req.params are always strings & need to be
+      // converted to int.
+      let todoId = parseInt(req.params.id, 10);
 
+      db.todo.findOne({
+        where: {
+          id: todoId,
+          userId: req.user.get('id')
+        }
+      })
 
-  db.todo.findOne({
-    where: {
-      id: todoId,
-      userId: req.user.get('id')
-    }
-  })
+      // Success case.
+      .then(function (todo) {
 
-  // Success case.
-  .then(function (todo) {
+            if (!!todo) {
+              res.json(todo.toJSON());
+            } else {
+              res.status(404).send();
+            }
+          },
 
-    if (!!todo) {
-      res.json(todo.toJSON());
-    } else {
-      res.status(404).send();
-    }
-  },
-
-   // Error case. 500 is a server error
-   function (e) {
-    res.status(500).send();
-  });
-});
-
-
-
-// POST /todos enables adding new todos through
-// the API.
-app.post('/todos', middleware.requireAuthentication, function (req, res) {
-
-  // _.pick() prevents the user from creating new
-  // fields that would be added to a todo.
-  let body = _.pick(req.body, 'description', 'completed');
-
-  db.todo.create(body)
-
-  // Success callback. Send back the data.
-  .then(function (todo) {
-
-    // res.json(todo.toJSON());
-    req.user.addTodo(todo).then(function () {
-      return todo.reload();
-
-    }).then (function (todo) {
-      res.json(todo.toJSON());
+          // Error case. 500 is a server error.
+          function (e) {
+            res.status(500).send();
+          });
     });
-  },
-
-  // Error callback. Send back the error object.
-  function (e) {
-    res.status(400).json(e);
-  });
-});
 
 
 
-// DELETE /todos/:id
-app.delete('/todos/:id', middleware.requireAuthentication, function (req, res) {
-  let todoId = parseInt(req.params.id, 10);
+// POST /todos enables adding new todos through the API.
+app.post('/todos', middleware.requireAuthentication,
+    function (req, res) {
 
-  db.todo.destroy({
-    where: {
-      id: todoId,
-      userId: req.user.get('id')
-    }
-  })
-  .then(function (rowsDeleted) {
+      // _.pick() prevents the user from creating new
+      // fields that would be added to a todo.
+      let body = _.pick(req.body, 'description', 'completed');
 
-    if(rowsDeleted === 0) {
+      db.todo.create(body)
 
-      res.status(404).json(
-          {error: 'No todo with id'}
-      );
+      // Success callback. Send back the data.
+      .then(function (todo) {
 
-    } else {
+            // res.json(todo.toJSON());
+            req.user.addTodo(todo).then(function () {
+              return todo.reload();
 
-      // 204: Everything went well & there's
-      // nothing to send back.
-      res.status(204).send();
-    }
-  }, function () {
-    res.status(500).send();
-  });
-});
+            }).then (function (todo) {
+              res.json(todo.toJSON());
+            });
+          },
 
+          // Error callback. Send back the error object.
+          function (e) {
+            res.status(400).json(e);
+          });
+    });
 
 
-// PUT /todos/:id
-app.put('/todos/:id', middleware.requireAuthentication, function (req, res) {
-  let todoId = parseInt(req.params.id, 10);
 
-  // id & any unnecessary fields are removed.
-  let body = _.pick(req.body, 'description', 'completed');
+// DELETE /todos/:id.
+app.delete('/todos/:id', middleware.requireAuthentication,
+    function (req, res) {
 
-  // attributes stores values that we want to
-  // update on the items in our todos array.
-  let attributes = {};
+      let todoId = parseInt(req.params.id, 10);
 
-  if (body.hasOwnProperty('completed')) {
-    attributes.completed = body.completed;
-  }
+      db.todo.destroy({
+        where: {
+          id: todoId,
+          userId: req.user.get('id')
+        }
+      })
+      .then(function (rowsDeleted) {
 
-  if (body.hasOwnProperty('description')) {
-    attributes.description = body.description;
-  }
+        if(rowsDeleted === 0) {
 
-  db.todo.findOne({
-    where: {
-      id: todoId,
-      userId: req.user.get('id')
-    }
-  })
-  .then(function (todo) {
+          res.status(404).json(
+              {error: 'No todo with id'}
+          );
 
-    if(todo) {
-      todo.update(attributes).then(function (todo) {
-        res.json(todo.toJSON());
+        } else {
 
-      }, function (e) {
-        res.status(400).json(e);
+          // 204: Everything went well & there's
+          // nothing to send back.
+          res.status(204).send();
+        }
+      }, function () {
+        res.status(500).send();
       });
+    });
 
-    } else {
-      res.status(404).send();
-    }
-  }, function () {
-    res.status(500).send();
-  });
-});
+
+
+// PUT /todos/:id.
+app.put('/todos/:id', middleware.requireAuthentication,
+    function (req, res) {
+
+      let todoId = parseInt(req.params.id, 10);
+
+      // id & any unnecessary fields are removed.
+      let body = _.pick(req.body, 'description', 'completed');
+
+      // attributes stores values that we want to
+      // update on the items in our todos array.
+      let attributes = {};
+
+      if(body.hasOwnProperty('completed')) {
+        attributes.completed = body.completed;
+      }
+
+      if (body.hasOwnProperty('description')) {
+        attributes.description = body.description;
+      }
+
+      db.todo.findOne({
+        where: {
+          id: todoId,
+          userId: req.user.get('id')
+        }
+      })
+      .then(function (todo) {
+
+        if(todo) {
+          todo.update(attributes).then(function (todo) {
+            res.json(todo.toJSON());
+
+          }, function (e) {
+            res.status(400).json(e);
+          });
+
+        } else {
+          res.status(404).send();
+        }
+      }, function () {
+        res.status(500).send();
+      });
+    });
 
 
 
@@ -214,7 +220,7 @@ app.post('/users', function (req, res) {
   .then(function (user) {
     res.json(user.toPublicJSON());
 
-  // ...& the error case.
+    // ...& the error case.
   }, function (e) {
     res.status(400).json(e);
   });
@@ -222,8 +228,9 @@ app.post('/users', function (req, res) {
 
 
 
-// POST /users/login
+// POST /users/login.
 app.post('/users/login', function (req, res) {
+
   let body = _.pick(req.body, 'email', 'password');
   let userInstance;
 
@@ -240,7 +247,9 @@ app.post('/users/login', function (req, res) {
     });
 
   }).then(function (tokenInstance) {
-    res.header('Auth', tokenInstance.get('token')).json(userInstance.toPublicJSON());
+
+    res.header('Auth', tokenInstance.get('token'))
+    .json(userInstance.toPublicJSON());
 
   }).catch(function () {
     res.status(401).send();
@@ -249,17 +258,17 @@ app.post('/users/login', function (req, res) {
 
 
 
-// DELETE /users/login
+// DELETE /users/login.
 app.delete('/users/login', middleware.requireAuthentication,
     function (req, res) {
 
-  req.token.destroy().then(function () {
-    res.status(204).send();
+      req.token.destroy().then(function () {
+        res.status(204).send();
 
-  }).catch(function () {
-    res.status(500).send();
-  });
-});
+      }).catch(function () {
+        res.status(500).send();
+      });
+    });
 
 
 
@@ -273,5 +282,4 @@ db.sequelize.sync({force: true}).then(function () {
         PORT + '!');
   });
 });
-
 

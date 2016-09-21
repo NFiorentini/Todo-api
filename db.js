@@ -25,13 +25,13 @@ if(env === 'production') {
   sequelize = new Sequelize(undefined, undefined,
       undefined, {
 
-    'dialect': 'sqlite',
+        'dialect': 'sqlite',
 
-    // __dirname is variable provided by Nodejs
-    // representing the path from harddrive to the
-    // current working directory.
-    'storage': __dirname + '/data/dev-todo-api.sqlite'
-  });
+        // __dirname is variable provided by Nodejs
+        // representing the path from harddrive to the
+        // current working directory.
+        'storage': __dirname + '/data/dev-todo-api.sqlite'
+      });
 }
 
 
@@ -56,5 +56,6 @@ db.todo.belongsTo(db.user);
 db.user.hasMany(db.todo);
 
 
-// Export the db object
+// Export the db object.
 module.exports = db;
+
