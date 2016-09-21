@@ -1,7 +1,7 @@
 {
   "name": "todo-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "Database todo list featuring user login",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,7 +9,7 @@
   "engines": {
     "node": "6.5.0"
   },
-  "author": "",
+  "author": "Nicholas Fiorentini",
   "license": "ISC",
   "dependencies": {
     "babel-preset-es2016": "^6.11.3",

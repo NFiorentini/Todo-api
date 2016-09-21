@@ -85,6 +85,7 @@ module.exports = function (sequelize, DataTypes) {
         });
       },
       findByToken: function (token) {
+
         return new Promise(function (resolve, reject) {
 
           try {

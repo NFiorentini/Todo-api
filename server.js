@@ -6,7 +6,7 @@ let middleware = require('./middleware.js')(db);
 let app = express();
 let PORT = process.env.PORT || 3000;
 let todos = [];
-let todoNextId = 1;
+// let todoNextId = 1;
 
 
 // Anytime a json request comes in, Express will
@@ -36,7 +36,7 @@ app.get('/todos', middleware.requireAuthentication,
 
         where.completed = true;
 
-      } else if (query.hasOwnProperty('completed') &&
+      } else if(query.hasOwnProperty('completed') &&
           query.completed === 'false') {
 
         where.completed = false;
@@ -82,7 +82,7 @@ app.get('/todos/:id', middleware.requireAuthentication,
       // Success case.
       .then(function (todo) {
 
-            if (!!todo) {
+            if(!!todo) {
               res.json(todo.toJSON());
             } else {
               res.status(404).send();
@@ -112,6 +112,7 @@ app.post('/todos', middleware.requireAuthentication,
 
             // res.json(todo.toJSON());
             req.user.addTodo(todo).then(function () {
+
               return todo.reload();
 
             }).then (function (todo) {
@@ -177,7 +178,7 @@ app.put('/todos/:id', middleware.requireAuthentication,
         attributes.completed = body.completed;
       }
 
-      if (body.hasOwnProperty('description')) {
+      if(body.hasOwnProperty('description')) {
         attributes.description = body.description;
       }
 
@@ -191,6 +192,7 @@ app.put('/todos/:id', middleware.requireAuthentication,
 
         if(todo) {
           todo.update(attributes).then(function (todo) {
+
             res.json(todo.toJSON());
 
           }, function (e) {
@@ -239,6 +241,7 @@ app.post('/users/login', function (req, res) {
 
   // Success case.
   .then(function (user) {
+
     let token = user.generateToken('authentication');
     userInstance = user;
 
@@ -274,7 +277,7 @@ app.delete('/users/login', middleware.requireAuthentication,
 
 // db.sequelize.sync({force: true}) removes the database
 // when the server starts.
-db.sequelize.sync({force: true}).then(function () {
+db.sequelize.sync().then(function () {
 
   app.listen(PORT, function () {
 
@@ -282,4 +285,3 @@ db.sequelize.sync({force: true}).then(function () {
         PORT + '!');
   });
 });
-
