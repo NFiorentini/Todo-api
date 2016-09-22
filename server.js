@@ -1,10 +1,10 @@
-let express = require('express');
+let middleware = require('./middleware.js')(db);
 let bodyParser = require('body-parser');
+let PORT = process.env.PORT || 3000;
+let express = require('express');
 let _ = require("underscore");
 let db = require('./db.js');
-let middleware = require('./middleware.js')(db);
 let app = express();
-let PORT = process.env.PORT || 3000;
 let todos = [];
 // let todoNextId = 1;
 
@@ -15,13 +15,15 @@ let todos = [];
 app.use(bodyParser.json());
 
 
+
 // The Root.
 app.get('/', function (req, res) {
   res.send('Todo API Root');
 });
 
 
-// GET all todos.
+
+// GET all todos. READ.
 app.get('/todos', middleware.requireAuthentication,
     function (req, res) {
 
@@ -31,6 +33,9 @@ app.get('/todos', middleware.requireAuthentication,
         userId: req.user.get('id')
       };
 
+      // hasOwnProperty() is a js Object method that determines
+      // whether an object has the specified property as a
+      // direct property of that object.
       if(query.hasOwnProperty('completed') &&
           query.completed === 'true') {
 
@@ -45,11 +50,16 @@ app.get('/todos', middleware.requireAuthentication,
       if(query.hasOwnProperty('q') && query.q.length > 0) {
 
         where.description = {
+
+          // sequelize's $like enables searching for an
+          // exact value. '%' indicates we don't care about
+          // content on either side of the word.
           $like: '%' + query.q + '%'
         };
       }
 
-      // Sequelize's findAll() lets you search by various criteria.
+      // sequelize's findAll() lets you search by various
+      // criteria. https://goo.gl/eTDz7d
       db.todo.findAll({where: where}).then(function (todos) {
 
         res.json(todos);
@@ -58,6 +68,7 @@ app.get('/todos', middleware.requireAuthentication,
         res.status(500).send();
       });
     });
+
 
 
 
@@ -85,6 +96,8 @@ app.get('/todos/:id', middleware.requireAuthentication,
             if(!!todo) {
               res.json(todo.toJSON());
             } else {
+
+              // 404 - not found.
               res.status(404).send();
             }
           },
@@ -97,14 +110,19 @@ app.get('/todos/:id', middleware.requireAuthentication,
 
 
 
-// POST /todos enables adding new todos through the API.
+
+// POST /todos CREATE.
 app.post('/todos', middleware.requireAuthentication,
     function (req, res) {
 
-      // _.pick() prevents the user from creating new
-      // fields that would be added to a todo.
+      // _.pick() returns a copy of the object, filtered to
+      // only have the values for the whitelisted keys (or
+      // or an array of valid keys). This prevents adding
+      // new fields to a todo.
       let body = _.pick(req.body, 'description', 'completed');
 
+      // todo.create(obj) takes the object that has the
+      // attributes that you want to save.
       db.todo.create(body)
 
       // Success callback. Send back the data.
@@ -128,7 +146,8 @@ app.post('/todos', middleware.requireAuthentication,
 
 
 
-// DELETE /todos/:id.
+
+// DELETE /todos/:id. DELETE.
 app.delete('/todos/:id', middleware.requireAuthentication,
     function (req, res) {
 
@@ -144,9 +163,7 @@ app.delete('/todos/:id', middleware.requireAuthentication,
 
         if(rowsDeleted === 0) {
 
-          res.status(404).json(
-              {error: 'No todo with id'}
-          );
+          res.status(404).json({error: 'No todo with id'});
 
         } else {
 
@@ -161,7 +178,8 @@ app.delete('/todos/:id', middleware.requireAuthentication,
 
 
 
-// PUT /todos/:id.
+
+// PUT /todos/:id. UPDATE.
 app.put('/todos/:id', middleware.requireAuthentication,
     function (req, res) {
 
@@ -196,6 +214,8 @@ app.put('/todos/:id', middleware.requireAuthentication,
             res.json(todo.toJSON());
 
           }, function (e) {
+
+            // 400 - bad syntax.
             res.status(400).json(e);
           });
 
@@ -206,6 +226,7 @@ app.put('/todos/:id', middleware.requireAuthentication,
         res.status(500).send();
       });
     });
+
 
 
 
@@ -227,6 +248,7 @@ app.post('/users', function (req, res) {
     res.status(400).json(e);
   });
 });
+
 
 
 
@@ -261,6 +283,7 @@ app.post('/users/login', function (req, res) {
 
 
 
+
 // DELETE /users/login.
 app.delete('/users/login', middleware.requireAuthentication,
     function (req, res) {
@@ -275,8 +298,14 @@ app.delete('/users/login', middleware.requireAuthentication,
 
 
 
-// db.sequelize.sync({force: true}) removes the database
-// when the server starts.
+
+// sequelize allows us to manage our data as js
+// objects & arrays, & it will do the hard work of
+// converting to SQLite calls, & it works with many
+// different types of databases.
+// sequelize.sync() returns a promise.
+// db.sequelize.sync({force: true}) drops the
+// database when the server starts.
 db.sequelize.sync().then(function () {
 
   app.listen(PORT, function () {

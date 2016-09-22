@@ -1,7 +1,7 @@
-let bcrypt = require('bcryptjs');
-let _ = require('underscore');
 let cryptojs = require('crypto-js');
 let jwt = require('jsonwebtoken');
+let bcrypt = require('bcryptjs');
+let _ = require('underscore');
 
 // Same args as todo.js.
 module.exports = function (sequelize, DataTypes) {
@@ -97,6 +97,9 @@ module.exports = function (sequelize, DataTypes) {
             let tokenData = JSON.parse(bytes.toString(
                 cryptojs.enc.Utf8));
 
+            // sequelize's findById(Number/String/Buffer)
+            // returns a Promise with that object pulled
+            // from the database.
             user.findById(tokenData.id).then(function (user) {
 
               if(user) {

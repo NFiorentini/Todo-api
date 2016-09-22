@@ -1,5 +1,6 @@
 module.exports = function (sequelize, DataTypes) {
 
+  // sequelize.define(modelname, {attributesconfig}).
   return sequelize.define('todo', {
 
     description: {
@@ -8,6 +9,10 @@ module.exports = function (sequelize, DataTypes) {
       // sequelize.import.
       type: DataTypes.STRING,
       allowNull: false,
+
+      // sequelize has many validations that can be
+      // included in the validate obj.
+      // https://goo.gl/7J34jw
       validate: {
 
         // length must be between 1 & 250 chars.
