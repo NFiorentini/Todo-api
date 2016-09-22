@@ -1,10 +1,10 @@
 let bodyParser = require('body-parser');
-let PORT = process.env.PORT || 3000;
-let express = require('express');
-let _ = require("underscore");
-let db = require('./db.js');
-let app = express();
-let todos = [];
+let PORT       = process.env.PORT || 3000;
+let express    = require('express');
+let _          = require("underscore");
+let db         = require('./db.js');
+let app        = express();
+let todos      = [];
 
 let middleware = require('./middleware.js')(db);
 
@@ -15,14 +15,14 @@ app.use(bodyParser.json());
 
 
 
-// The Root.
+// Root.
 app.get('/', function (req, res) {
   res.send('Todo API Root');
 });
 
 
 
-// GET all todos. READ.
+// READ. GET all todos.
 app.get('/todos', middleware.requireAuthentication,
     function (req, res) {
 
@@ -110,7 +110,7 @@ app.get('/todos/:id', middleware.requireAuthentication,
 
 
 
-// POST /todos CREATE.
+// CREATE.
 app.post('/todos', middleware.requireAuthentication,
     function (req, res) {
 
@@ -120,8 +120,8 @@ app.post('/todos', middleware.requireAuthentication,
       // new fields to a todo.
       let body = _.pick(req.body, 'description', 'completed');
 
-      // todo.create(obj) takes the object that has the
-      // attributes that you want to save.
+      // todo.create(obj) takes the object of attributes
+      // that you want to save.
       db.todo.create(body)
 
       // Success callback. Send back the data.
@@ -146,7 +146,7 @@ app.post('/todos', middleware.requireAuthentication,
 
 
 
-// DELETE /todos/:id. DELETE.
+// DELETE. DELETE /todos/:id.
 app.delete('/todos/:id', middleware.requireAuthentication,
     function (req, res) {
 
@@ -178,7 +178,7 @@ app.delete('/todos/:id', middleware.requireAuthentication,
 
 
 
-// PUT /todos/:id. UPDATE.
+// UPDATE. PUT /todos/:id.
 app.put('/todos/:id', middleware.requireAuthentication,
     function (req, res) {
 
@@ -299,10 +299,13 @@ app.delete('/users/login', middleware.requireAuthentication,
 
 
 // sequelize allows us to manage our data as js
-// objects & arrays, & it will do the hard work of
-// converting to SQLite calls, & it works with many
-// different types of databases.
-// sequelize.sync() returns a promise.
+// objects & arrays, & does the hard work of
+// converting to SQLite calls, & it works
+// with many different types of databases.
+
+// sequelize.sync() creates the tables if they
+// don't already exist & returns a promise.
+
 // db.sequelize.sync({force: true}) drops the
 // database when the server starts.
 db.sequelize.sync().then(function () {

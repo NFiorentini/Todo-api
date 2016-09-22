@@ -1,3 +1,5 @@
+// Sequelize requires a specific format for files called
+// with sequelize.import().
 module.exports = function (sequelize, DataTypes) {
 
   // sequelize.define(modelname, {attributesconfig}).
@@ -6,11 +8,11 @@ module.exports = function (sequelize, DataTypes) {
     description: {
 
       // The DataTypes object is required when using
-      // sequelize.import.
+      // sequelize.import().
       type: DataTypes.STRING,
       allowNull: false,
 
-      // sequelize has many validations that can be
+      // Sequelize has many validations that can be
       // included in the validate obj.
       // https://goo.gl/7J34jw
       validate: {

@@ -1,4 +1,4 @@
-// db.js loads all of the modules into sequelize &
+// db.js loads all of the modules into Sequelize &
 // returns the database connection to server.js.
 
 let Sequelize = require('sequelize');
@@ -28,8 +28,8 @@ if(env === 'production') {
         'dialect': 'sqlite',
 
         // __dirname is variable provided by Nodejs
-        // representing the path from harddrive to the
-        // current working directory.
+        // representing the path from the hard drive
+        // to the current working directory.
         'storage': __dirname + '/data/dev-todo-api.sqlite'
       });
 }
@@ -38,7 +38,7 @@ if(env === 'production') {
 let db = {};
 
 
-// Load sequelize models.
+// Load sequelize models & attach them to the db object.
 db.todo = sequelize.import(__dirname + '/models/todo.js');
 db.user = sequelize.import(__dirname + '/models/user.js');
 
