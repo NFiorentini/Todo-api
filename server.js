@@ -1,4 +1,3 @@
-let middleware = require('./middleware.js')(db);
 let bodyParser = require('body-parser');
 let PORT = process.env.PORT || 3000;
 let express = require('express');
@@ -6,8 +5,8 @@ let _ = require("underscore");
 let db = require('./db.js');
 let app = express();
 let todos = [];
-// let todoNextId = 1;
 
+let middleware = require('./middleware.js')(db);
 
 // Anytime a json request comes in, Express will
 // be able to parse it, & we can access it via
